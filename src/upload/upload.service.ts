@@ -16,7 +16,7 @@ export class UploadService {
   constructor(private config: ConfigService) {}
   async handleFileUpload(file: Express.Multer.File, dirName: string) {
     const filePath = this.saveFile(file, dirName);
-    const uploadPath = join(__dirname, '..', `uploads/`);
+    const uploadPath = join(__dirname, '..', '..', 'uploads'); 
     const loader = new DirectoryLoader(uploadPath, {
       '.pdf': (path: string) => new PDFLoader(path),
       '.docx': (path: string) => new DocxLoader(path),
@@ -41,7 +41,7 @@ export class UploadService {
   }
 
   private saveFile(file: Express.Multer.File, dirName: string): string {
-    const uploadPath = join(__dirname, '..', `uploads/${dirName}`);
+    const uploadPath = join(__dirname, '..', '..',`uploads/${dirName}`);
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
