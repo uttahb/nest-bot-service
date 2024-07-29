@@ -27,7 +27,7 @@ export class ChatService {
     console.log(userId);
     console.log(query);
     console.log(history);
-
+    history = history || [];
     const vectorStore = new QdrantVectorStore(this.newOpenAiEmbeddings, {
       url: this.config.get('QDRANT_URL'),
       collectionName: userId,
