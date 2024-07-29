@@ -13,7 +13,14 @@ interface ChatRequestBody {
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
   @Post('query/:userId')
-  query(@Body() body: ChatRequestBody, @Param('userId') userId: string) {
-    return this.chatService.query(userId, body.query, body.history);
+  async query(@Body() body: ChatRequestBody, @Param('userId') userId: string) {
+    const response = await this.chatService.query(
+      userId,
+      body.query,
+      body.history,
+    );
+    return {
+      response,
+    };
   }
 }
