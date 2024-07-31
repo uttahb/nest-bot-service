@@ -46,6 +46,6 @@ export class ChatService {
       chat_history: history.map((h) => h.content).join('\n'),
     });
     console.log(res);
-    return res.text;
+    return res;
   }
 }

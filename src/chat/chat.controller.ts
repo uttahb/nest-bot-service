@@ -20,7 +20,8 @@ export class ChatController {
       body.history,
     );
     return {
-      response,
+      response: response.text,
+      source: response.sourceDocuments
     };
   }
 }
