@@ -40,9 +40,9 @@ export class ChatService {
         returnSourceDocuments: true,
       },
     );
-    const defaultPrompt = `\n\n can you please explain as bulletin points and a summary at the end format?`;
+    // const defaultPrompt = `\n\n can you please explain as bulletin points and a summary at the end format?`;
     const res = await this.chain.call({
-      question: query + defaultPrompt,
+      question: query,
       chat_history: history.map((h) => h.content).join('\n'),
     });
     console.log(res);
