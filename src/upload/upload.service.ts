@@ -16,7 +16,7 @@ export class UploadService {
   constructor(private config: ConfigService) {}
   async handleFileUpload(file: Express.Multer.File, dirName: string) {
     const filePath = this.saveFile(file, dirName);
-    const uploadPath = join(__dirname, '..', '..', 'uploads'); 
+    const uploadPath = join(__dirname, '..', '..', `uploads/${dirName}`); 
     const loader = new DirectoryLoader(uploadPath, {
       '.pdf': (path: string) => new PDFLoader(path),
       '.docx': (path: string) => new DocxLoader(path),
@@ -30,12 +30,12 @@ export class UploadService {
         collectionName: dirName,
       },
     );
-    const response = await vectorStore.similaritySearch(
-      'when is abdul kalam born?',
-      1,
-    );
+    // const response = await vectorStore.similaritySearch(
+    //   'when is abdul kalam born?',
+    //   1,
+    // );
 
-    console.log(response);
+    // console.log(response);
 
     return { message: 'File uploaded successfully', filePath };
   }
