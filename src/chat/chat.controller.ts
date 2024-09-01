@@ -21,7 +21,23 @@ export class ChatController {
     );
     return {
       response: response.text,
-      source: response.sourceDocuments
+      source: response.sourceDocuments,
+    };
+  }
+
+  @Post('query-all/:userId')
+  async queryAll(
+    @Body() body: ChatRequestBody,
+    @Param('userId') userId: string,
+  ) {
+    const response = await this.chatService.queryAll(
+      userId,
+      body.query,
+      body.history,
+    );
+    return {
+      response: response.text,
+      source: response.sourceDocuments,
     };
   }
 }

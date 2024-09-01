@@ -48,4 +48,34 @@ export class ChatService {
     console.log(res);
     return res;
   }
+
+  async queryAll(
+    userId: string,
+    query: string,
+    history: HistoryItem[],
+  ): Promise<any> {
+    console.log(userId);
+    console.log(query);
+    console.log(history);
+    history = history || [];
+    const vectorStore = new QdrantVectorStore(this.newOpenAiEmbeddings, {
+      url: this.config.get('QDRANT_URL'),
+      collectionName: 'wholekh',
+    });
+    const model = new OpenAI({});
+    this.chain = ConversationalRetrievalQAChain.fromLLM(
+      model,
+      vectorStore.asRetriever(),
+      {
+        returnSourceDocuments: true,
+      },
+    );
+    // const defaultPrompt = `\n\n can you please explain as bulletin points and a summary at the end format?`;
+    const res = await this.chain.call({
+      question: query,
+      chat_history: history.map((h) => h.content).join('\n'),
+    });
+    console.log(res);
+    return res;
+  }
 }
