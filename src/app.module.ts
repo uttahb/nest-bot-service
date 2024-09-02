@@ -17,7 +17,7 @@ import { Vectorizer } from './vectorizer/vectorizer';
     ConfigModule.forRoot(),
     BullModule.forRoot({
       connection: {
-        host: 'localhost',
+        host: 'redis',
         port: 6379,
       },
     }),
