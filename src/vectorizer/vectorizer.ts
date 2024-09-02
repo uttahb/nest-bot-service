@@ -51,7 +51,7 @@ export class Vectorizer extends WorkerHost {
     super();
   }
   async process(job: Job<any, any, string>): Promise<any> {
-    const client = new QdrantClient({ host: 'localhost', port: 6333 });
+    const client = new QdrantClient({ host: 'qdrant', port: 6333 });
     client.deleteCollection('wholekh');
 
     console.log('Processing job:', job.data);
