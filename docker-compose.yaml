@@ -8,20 +8,20 @@ services:
     ports:
       - '6333:6333'
       - '6334:6334'
-  # botservice:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./uploads:/app/uploads
-  #   depends_on:
-  #     qdrant:
-  #       condition: service_started
-  #   ports:
-  #     - '3000:3000'
-  #   environment:
-  #     - NODE_ENV=development
-  #   command: npm run start:dev
+  botservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      qdrant:
+        condition: service_started
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+    command: npm run start:dev
   redis:
     image: redis:latest
     restart: always
