@@ -57,17 +57,16 @@ export class Vectorizer extends WorkerHost {
     } catch (err) {
       console.log(err);
     }
-
-    console.log('Processing job:', job.data);
-    const dir = this.config.get('STORAGE_DIR');
-    const loader = new DirectoryLoader(dir, {
-      '.pdf': (path: string) => new PDFLoader(path),
-      '.docx': (path: string) => new DocxLoader(path),
-    });
-    const docs = await loader.load();
-    // console.log(docs);
-    console.log('qdrant url ', this.config.get('QDRANT_URL'));
     try {
+      console.log('Processing job:', job.data);
+      const dir = this.config.get('STORAGE_DIR');
+      const loader = new DirectoryLoader(dir, {
+        '.pdf': (path: string) => new PDFLoader(path),
+        '.docx': (path: string) => new DocxLoader(path),
+      });
+      const docs = await loader.load();
+      // console.log(docs);
+      console.log('qdrant url ', this.config.get('QDRANT_URL'));
       await QdrantVectorStore.fromDocuments(docs, new OpenAIEmbeddings(), {
         url: this.config.get('QDRANT_URL'),
         collectionName: 'wholekh',
@@ -76,6 +75,12 @@ export class Vectorizer extends WorkerHost {
     } catch (err) {
       console.log(err);
     }
+
+    // try {
+
+    // } catch (err) {
+    //   console.log(err);
+    // }
 
     // let progress = 0;
     // for (i = 0; i < 100; i++) {
