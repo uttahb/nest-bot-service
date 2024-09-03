@@ -44,6 +44,9 @@ import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 import { DocxLoader } from 'langchain/document_loaders/fs/docx';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { OpenAIEmbeddings } from '@langchain/openai';
+import { CSVLoader } from '@langchain/community/document_loaders/fs/csv';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Processor('vectorizer-queue')
 export class Vectorizer extends WorkerHost {
@@ -51,7 +54,10 @@ export class Vectorizer extends WorkerHost {
     super();
   }
   async process(job: Job<any, any, string>): Promise<any> {
-    const client = new QdrantClient({ host: 'qdrant', port: 6333 });
+    const client = new QdrantClient({
+      host: this.config.get('VECTORDB_HOST'),
+      port: 6333,
+    });
     try {
       await client.deleteCollection('wholekh');
     } catch (err) {
@@ -60,18 +66,7 @@ export class Vectorizer extends WorkerHost {
     try {
       console.log('Processing job:', job.data);
       const dir = this.config.get('STORAGE_DIR');
-      const loader = new DirectoryLoader(dir, {
-        '.pdf': (path: string) => new PDFLoader(path),
-        '.docx': (path: string) => new DocxLoader(path),
-      });
-      const docs = await loader.load();
-      // console.log(docs);
-      console.log('qdrant url ', this.config.get('QDRANT_URL'));
-      await QdrantVectorStore.fromDocuments(docs, new OpenAIEmbeddings(), {
-        url: this.config.get('QDRANT_URL'),
-        collectionName: 'wholekh',
-      });
-      console.log('vectorizer done');
+      await this.loopThroughChildDirectories(dir);
     } catch (err) {
       console.log(err);
     }
@@ -89,5 +84,55 @@ export class Vectorizer extends WorkerHost {
     //   await job.progress(progress);
     // }
     // return {};
+  }
+  async vectorizeDirectory(directoryPath: string) {
+    const loader = new DirectoryLoader(directoryPath, {
+      '.pdf': (path) => new PDFLoader(path),
+      '.docx': (path) => new DocxLoader(path),
+      '.csv': (path) => new CSVLoader(path),
+    });
+    const docs = await loader.load();
+    const vectorStore = await QdrantVectorStore.fromDocuments(
+      docs,
+      new OpenAIEmbeddings(),
+      {
+        client: new QdrantClient({
+          host: this.config.get('VECTORDB_HOST'),
+          port: 6333,
+        }),
+        collectionName: 'wholekh',
+      },
+    );
+    return vectorStore;
+  }
+  async loopThroughChildDirectories(directoryPath: string): Promise<void> {
+    // Read the contents of the directory
+    const stream = fs.createWriteStream('error_docs.txt', { flags: 'a' });
+
+    fs.readdir(directoryPath, async (err, files) => {
+      if (err) {
+        console.error(`Error reading directory: ${err.message}`);
+        return;
+      }
+
+      // files.forEach((file) => {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        // Get the full path of the file/directory
+        const fullPath = path.join(directoryPath, file);
+
+        // Get the stats for the file/directory
+        const statsObj = fs.statSync(fullPath);
+        if (statsObj.isDirectory()) {
+          try {
+            await this.vectorizeDirectory(fullPath);
+          } catch (err) {
+            console.log(err);
+            stream.write(fullPath + '\n');
+          }
+        }
+      }
+      stream.end();
+    });
   }
 }

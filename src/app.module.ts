@@ -17,7 +17,7 @@ import { Vectorizer } from './vectorizer/vectorizer';
     ConfigModule.forRoot(),
     BullModule.forRoot({
       connection: {
-        host: 'redis',
+        host: process.env.REDIS_HOST,
         port: 6379,
       },
     }),
