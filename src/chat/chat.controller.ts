@@ -2,16 +2,19 @@ import { Body, Controller, Param, Post } from '@nestjs/common';
 import { ChatService } from './chat.service';
 
 interface HistoryItem {
-  role: string;
-  content: string;
+  content: string; // The text content of the chat
+  timestamp?: Date; // Optional timestamp for when the message was created
 }
+
 interface ChatRequestBody {
   query: string;
   history: HistoryItem[];
 }
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+  ) { }
   @Post('query/:userId')
   async query(@Body() body: ChatRequestBody, @Param('userId') userId: string) {
     const response = await this.chatService.query(
@@ -39,5 +42,5 @@ export class ChatController {
       response: response.text,
       source: response.sourceDocuments,
     };
-  }
+  }  
 }

@@ -1,9 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { VectorizerService } from './vectorizer.service';
+//import { ElasticsearchService } from '../elasticsearch/elasticsearch.service';
 
 @Controller('vectorizer')
 export class VectorizerController {
-  constructor(private readonly vectorizerService: VectorizerService) {}
+  constructor(
+    private readonly vectorizerService: VectorizerService,
+    //private elasticsearchService: ElasticsearchService,
+  ) {}
   @Get('reindex')
   async reindex() {
     try {
@@ -18,4 +22,5 @@ export class VectorizerController {
       };
     }
   }
+  
 }

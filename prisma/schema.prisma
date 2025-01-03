@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // Replace with "mysql", "sqlite", etc., as per your setup
+  url      = env("DATABASE_URL")
+}
+
+model chats {
+  uuid      String         @id @default(uuid())
+  user_id   String
+  title     String         @db.Text
+  createdAt DateTime       @default(now())
+  history   chat_history[] // One-to-many relationship
+}
+
+model chat_history {
+  uuid      String   @id @default(uuid())
+  chat_id   String
+  query     String   @db.Text
+  response  String   @db.Text
+  order     Int      @db.Int
+  createdAt DateTime @default(now())
+  chat      chats    @relation(fields: [chat_id], references: [uuid], onDelete: Cascade)
+}

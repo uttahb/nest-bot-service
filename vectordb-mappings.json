@@ -1,0 +1,35 @@
+{
+  "mappings": {
+    "properties": {
+      "version_id": {
+        "type": "keyword"
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "content_vector": {
+        "type": "dense_vector",
+        "dims": 1536,
+        "index": true,
+        "similarity": "cosine"
+      }
+    }
+  }
+}

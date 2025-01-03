@@ -11,6 +11,12 @@ import { BullModule } from '@nestjs/bullmq';
 import { VectorizerController } from './vectorizer/vectorizer.controller';
 import { VectorizerService } from './vectorizer/vectorizer.service';
 import { Vectorizer } from './vectorizer/vectorizer';
+import { PrismaService } from './prisma/prisma.service';
+import { ElasticsearchModule } from '@nestjs/elasticsearch';
+import { ElasticvectordbService } from './elasticsearch/elasticvectordb.service';
+import { ElasticvectordbController } from './elasticsearch/elasticvectordb.controller';
+import { ChatBotService } from './chatbot/chatbot.service';
+import { ChatBotController } from './chatbot/chatbot.controller';
 
 @Module({
   imports: [
@@ -24,12 +30,14 @@ import { Vectorizer } from './vectorizer/vectorizer';
     BullModule.registerQueue({
       name: 'vectorizer-queue',
     }),
-    // BullModule.forRoot({
-    //   connection: {
-    //     host: 'localhost',
-    //     port: 6379,
-    //   },
-    // }),
+    // ElasticsearchModule configuration
+    ElasticsearchModule.register({
+      node: process.env.ELASTICSEARCH_HOST,
+      auth: {
+        username: process.env.ELASTICSEARCH_USERNAME,
+        password: process.env.ELASTICSEARCH_PASSWORD,
+      },
+    }),
   ],
 
   controllers: [
@@ -37,6 +45,8 @@ import { Vectorizer } from './vectorizer/vectorizer';
     UploadController,
     ChatController,
     VectorizerController,
+    ElasticvectordbController,
+    ChatBotController
   ],
   providers: [
     AppService,
@@ -44,6 +54,9 @@ import { Vectorizer } from './vectorizer/vectorizer';
     ChatService,
     VectorizerService,
     Vectorizer,
+    PrismaService,
+    ChatBotService,
+    ElasticvectordbService, // Ensure the service is added to the providers array
   ],
 })
 export class AppModule {
