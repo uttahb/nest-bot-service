@@ -21,7 +21,6 @@ interface ElasticsearchDocument {
 
 @Injectable()
 export class ElasticvectordbService {
-  private franc: any;
   private client: Client;
   private storageDir: string;
   private readonly indexName = process.env.ELASTICSEARCH_INDEX || 'vector-index'; // Fallback to 'vector-index' if the env var is not setprivate readonly logger = new Logger(PdfService.name);private readonly logger = new Logger(PdfService.name);
@@ -317,6 +316,7 @@ export class ElasticvectordbService {
   // In ElasticvectordbService
   async updateIndexMapping() {
     try {
+      console.log("this.indexName", this.indexName);
       const mappingsFilePath = path.join(__dirname, '..', '..', 'vectordb-mappings.json');
       const mappingsData = JSON.parse(fs.readFileSync(mappingsFilePath, 'utf-8'));
 
