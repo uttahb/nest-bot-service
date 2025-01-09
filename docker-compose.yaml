@@ -1,14 +1,5 @@
 version: '3.8'
 services:
-  qdrant:
-    image: qdrant/qdrant
-    container_name: qdrant_container
-    environment:
-      - QDRANT_COLLECTION_NAME=test_collection_1
-    ports:
-      - '6333:6333'
-      - '6334:6334'
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: elasticsearch
@@ -29,29 +20,40 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./uploads:/app/uploads
-      - ./documents:/app/documents # Corrected volume for documents directory
+      - ./documents:/app/documents # Ensure this directory exists and has proper permissions
     depends_on:
-      - qdrant
       - redis
     ports:
       - '3000:3000'
     environment:
-      - NODE_ENV=development
-      - MYSQL_HOST=host.docker.internal # Updated to connect to MySQL on the host machine
-      - DATABASE_URL=mysql://root:@host.docker.internal:3306/chatbot_db
-      - MYSQL_PORT=3306 # Ensure MySQL is listening on port 3306 on the host
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    command: [ "sh", "-c", "npx prisma generate && npm run start:dev" ]
+      NODE_ENV: ${NODE_ENV:-development} # Use development by default or set in .env for deployment
+      MYSQL_HOST: ${MYSQL_HOST:-host.docker.internal}
+      DATABASE_URL: ${DATABASE_URL:-mysql://root:@host.docker.internal:3306/chatbot_db}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+    command: [ "sh", "-c", "npm install && npm run prisma:generate && npm run start:${NODE_ENV}" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+        reservations:
+          memory: 1g
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
   redis:
     image: redis:latest
+    container_name: redis_container
     restart: always
     ports:
       - '6379:6379'
@@ -59,12 +61,12 @@ services:
       - ./queue-data:/root/redis
       - ./queue-conf/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
-      - REDIS_PASSWORD=password
-      - REDIS_PORT=6379
-      - REDIS_DATABASES=16
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-password}
+      REDIS_PORT: 6379
+      REDIS_DATABASES: 16
 
 volumes:
   uploads:
     driver: local
   esdata:
-    driver: local # Volume for Elasticsearch data persistence
+    driver: local

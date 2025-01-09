@@ -10,9 +10,9 @@ export class Vectorizer extends WorkerHost {
 
   constructor(private config: ConfigService) {
     super();
-    const elasticsearchHost = this.config.get<string>('ELASTICSEARCH_HOST');
+    const elasticsearchHost = this.config.get<string>('ELASTIC_URL');
     if (!elasticsearchHost) {
-      throw new Error('ELASTICSEARCH_HOST is not defined in the environment variables');
+      throw new Error('ELASTIC_URL is not defined in the environment variables');
     }
     this.elasticsearchClient = new Client({
       node: elasticsearchHost,

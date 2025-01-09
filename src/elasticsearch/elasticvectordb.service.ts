@@ -80,10 +80,13 @@ export class ElasticvectordbService {
 
   // Load documents from the provided paths (doc_id -> doc_path)
   async loadDocumentsFromPaths(docPaths: { [key: string]: string }) {
-
+    //console.log("docPaths---", docPaths);
     const documents = [];
     for (const [documentId, relativePath] of Object.entries(docPaths)) {
-      const document = await this.extractDocFromthePath(documentId, relativePath);
+      console.log("relativePath---", relativePath);
+      const normalizedPath = path.normalize(relativePath);
+      console.log("normalizedPath---", normalizedPath);
+      const document = await this.extractDocFromthePath(documentId, normalizedPath);
       if (document) documents.push(document);
     }
 
@@ -93,52 +96,72 @@ export class ElasticvectordbService {
   // Extract document based on documentId and its relative path
   async extractDocFromthePath(documentId: string, relativePath: string) {
     console.log("documentId", documentId);
-    const versionId = extractVersionId(relativePath);
-    if (versionId) {
-      const documentPath = path.join(this.storageDir, documentId, relativePath);
-      try {
-        let text = '';
 
-        if (documentPath.endsWith('.pdf')) {
-          text = await this.extractTextFromPdf(documentPath);
-        } else if (documentPath.endsWith('.txt')) {
-          text = fs.readFileSync(documentPath, 'utf-8');
-          console.log("Doc type: txt", documentId);
-        } else if (documentPath.endsWith('.xlsx')) {
-          console.log("Doc type: xlsx", documentId);
-          text = this.extractTextFromExcel(documentPath);
-        } else if (documentPath.endsWith('.docx')) {
-          console.log("Doc type: docx", documentId);
-          text = await this.extractTextFromDocx(documentPath);
-        } else if (this.isImage(documentPath)) {
-          console.log("Doc type: image", documentId);
-          text = await this.extractTextFromImage(documentPath);
-        } else {
+    // Extract versionId from the relative path
+    const versionId = extractVersionId(relativePath);
+
+    // Check if versionId exists, otherwise return empty response
+    if (versionId) {
+      // Join the base storage directory with the documentId and relative path
+      // Inside your extractDocFromthePath method:
+      const documentPath = path.join(this.storageDir, documentId, relativePath);
+      console.log("const documentPath", documentPath);
+      // Normalize the path to ensure consistent separator usage
+      const normalizedPath = path.normalize(documentPath);
+
+      console.log("Normalized document path:", relativePath);
+
+      // Then use the normalized path in the rest of the code
+      if (fs.existsSync(normalizedPath)) {
+
+        try {
+          let text = '';
+
+          // Check the file type and process accordingly
+          if (documentPath.endsWith('.pdf')) {
+            text = await this.extractTextFromPdf(documentPath);
+          } else if (documentPath.endsWith('.txt')) {
+            text = fs.readFileSync(documentPath, 'utf-8');
+            console.log("Doc type: txt", documentId);
+          } else if (documentPath.endsWith('.xlsx')) {
+            console.log("Doc type: xlsx", documentId);
+            text = this.extractTextFromExcel(documentPath);
+          } else if (documentPath.endsWith('.docx')) {
+            console.log("Doc type: docx", documentId);
+            text = await this.extractTextFromDocx(documentPath);
+          } else if (this.isImage(documentPath)) {
+            console.log("Doc type: image", documentId);
+            text = await this.extractTextFromImage(documentPath);
+          } else {
+            return {
+              document_id: documentId,
+              title: '',
+              content: '',
+              version_id: versionId,
+              reason: "The uploaded file format is not supported"
+            };
+          }
+
+          // If text was extracted, return document details
+          if (text) {
+            return {
+              document_id: documentId,
+              title: `${documentId}_${relativePath}`,  // Use relative path for title
+              content: text,
+              version_id: versionId,
+            };
+          }
+        } catch (error) {
+          console.error(`Error processing file ${documentPath} in document ${documentId}`, error);
           return {
             document_id: documentId,
             title: '',
             content: '',
             version_id: versionId,
-            reason: "The uploaded file format is not supported"
           };
         }
-
-        if (text) {
-          return {
-            document_id: documentId,
-            title: `${documentId}_${documentPath}`,
-            content: text,
-            version_id: versionId,
-          };
-        }
-      } catch (error) {
-        console.error(`Error processing file ${documentPath} in document ${documentId}`, error);
-        return {
-          document_id: documentId,
-          title: '',
-          content: '',
-          version_id: versionId,
-        };
+      } else {
+        throw new Error(`File not found: ${normalizedPath}`);
       }
     } else {
       return {
@@ -152,11 +175,13 @@ export class ElasticvectordbService {
 
   async extractTextFromPdf(filePath: string): Promise<string> {
     try {
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`File not found: ${filePath}`);
+      const normalizedPath = path.normalize(filePath);
+
+      if (!fs.existsSync(normalizedPath)) {
+        throw new Error(`File not found: ${normalizedPath}`);
       }
 
-      const fileBuffer = fs.readFileSync(filePath);
+      const fileBuffer = fs.readFileSync(normalizedPath);
       const data = await pdf(fileBuffer);
 
       if (!data.text || data.text.trim() === '') {
@@ -164,11 +189,6 @@ export class ElasticvectordbService {
         return 'Unable to extract text.';
       }
 
-      if (data.info) {
-        //console.log('PDF Metadata:', data.info);
-      }
-
-      //console.log(`Successfully extracted text from: ${filePath}`);
       return data.text;
     } catch (error) {
       console.error(`Error extracting text from ${filePath}:`, error.message);

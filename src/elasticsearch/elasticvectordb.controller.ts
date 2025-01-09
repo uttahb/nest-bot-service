@@ -24,6 +24,7 @@ export class ElasticvectordbController {
       // Process documents in smaller chunks
       const documentChunks = this.chunkArray(Object.entries(docPaths), 10); // Process 10 documents at a time
       for (const chunk of documentChunks) {
+        // console.log("Object.fromEntries(chunk)", Object.fromEntries(chunk));
         const documents = await this.elasticvectordbService.loadDocumentsFromPaths(Object.fromEntries(chunk));
 
         if (!documents || documents.length === 0) {
@@ -100,7 +101,7 @@ export class ElasticvectordbController {
         }
       } else {
         await this.elasticvectordbService.vectorizeDocument(doc);
-        const reason = `Document indexed with version ${versionId}.`;
+        const reason = `Document indexed with docId ${docId} and version ${versionId}.`;
         this.logger.log(reason);
         indexed.push({ doc_id: docId, version_id: versionId, reason });
       }

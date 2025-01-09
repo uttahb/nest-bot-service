@@ -32,7 +32,7 @@ import { ChatBotController } from './chatbot/chatbot.controller';
     }),
     // ElasticsearchModule configuration
     ElasticsearchModule.register({
-      node: process.env.ELASTICSEARCH_HOST,
+      node: process.env.ELASTIC_URL,
       auth: {
         username: process.env.ELASTICSEARCH_USERNAME,
         password: process.env.ELASTICSEARCH_PASSWORD,
