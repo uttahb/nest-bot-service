@@ -17,7 +17,7 @@ export interface ChatHistory {
   query: string;
   response: string;
   order: number;
-  createdAt: Date;
+  created_at: Date;
 }
 
 interface DocumentSource {
@@ -199,7 +199,7 @@ export class ChatBotService {
 
     return chatHistory.map((item) => ({
       content: item.response,
-      timestamp: item.createdAt,
+      timestamp: item.created_at,
     }));
   }
 
@@ -244,12 +244,12 @@ export class ChatBotService {
     try {
       return await this.prisma.chats.findMany({
         where: { user_id: userId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
         select: {
           uuid: true,
           user_id: true,
           title: true,
-          createdAt: true,
+          created_at: true,
         },
       });
     } catch (error) {
@@ -272,7 +272,7 @@ export class ChatBotService {
           query: true,
           response: true,
           order: true,
-          createdAt: true,
+          created_at: true,
         },
       });
 

@@ -17,7 +17,7 @@ model chats {
   uuid      String         @id @default(uuid())
   user_id   String
   title     String         @db.Text
-  createdAt DateTime       @default(now())
+  created_at DateTime       @default(now())
   history   chat_history[] // One-to-many relationship
 }
 
@@ -27,6 +27,6 @@ model chat_history {
   query     String   @db.Text
   response  String   @db.Text
   order     Int      @db.Int
-  createdAt DateTime @default(now())
+  created_at DateTime @default(now())
   chat      chats    @relation(fields: [chat_id], references: [uuid], onDelete: Cascade)
 }
