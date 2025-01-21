@@ -11,7 +11,7 @@ export class VectorizerService {
     @InjectQueue('vectorizer-queue') private indexQueue: Queue,
     private configService: ConfigService,
   ) {
-    this.dbType = this.configService.get<string>('DB_TYPE');
+    this.dbType = this.configService.get<string>('VECTOR_DB_TYPE');
   }
 
   async reIndex() {
@@ -20,7 +20,7 @@ export class VectorizerService {
         return this.reIndexQdrant();
       case 'elasticsearch':
       default:
-        throw new Error(`Unsupported DB_TYPE: ${this.dbType}`);
+        throw new Error(`Unsupported VECTOR_DB_TYPE: ${this.dbType}`);
     }
   }
 

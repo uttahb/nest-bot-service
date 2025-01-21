@@ -58,14 +58,14 @@ export class ChatService {
       let vectorStore: any;
 
       // Determine database type
-      const dbType = this.configService.get('DB_TYPE');
+      const dbType = this.configService.get('VECTOR_DB_TYPE');
       if (dbType === 'qdrant') {
         vectorStore = new QdrantVectorStore(this.newOpenAiEmbeddings, {
           url: this.configService.get('QDRANT_URL'),
           collectionName: userId,
         });
       } else {
-        throw new Error('Unsupported DB_TYPE');
+        throw new Error('Unsupported VECTOR_DB_TYPE');
       }
 
       // Conversational Chain
@@ -116,14 +116,14 @@ export class ChatService {
       // Add the current query with the timestamp to seenQueries
       this.seenQueries.set(query, currentTime);
 
-      const dbType = this.configService.get('DB_TYPE');
+      const dbType = this.configService.get('VECTOR_DB_TYPE');
       if (dbType === 'qdrant') {
         retriever = new QdrantVectorStore(this.newOpenAiEmbeddings, {
           url: this.configService.get('QDRANT_URL'),
           collectionName: 'global',
         }).asRetriever();
       } else {
-        throw new Error('Unsupported DB_TYPE');
+        throw new Error('Unsupported VECTOR_DB_TYPE');
       }
 
       const model = new OpenAI({});

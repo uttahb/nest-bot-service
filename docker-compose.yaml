@@ -20,14 +20,15 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./uploads:/app/uploads
-      - ./documents:/app/documents # Ensure this directory exists and has proper permissions
+      - ${STORAGE_DIR_HOST}:/app/documents # Ensure this directory exists and has proper permissions
+      #- C:/projects/knowledge-hub/documents:/app/documents
     depends_on:
       - redis
     ports:
       - '3000:3000'
     environment:
       NODE_ENV: ${NODE_ENV:-development} # Use development by default or set in .env for deployment
-      MYSQL_HOST: ${MYSQL_HOST:-host.docker.internal}
+      # MYSQL_HOST: ${MYSQL_HOST:-host.docker.internal}
       DATABASE_URL: ${DATABASE_URL:-mysql://root:@host.docker.internal:3306/chatbot_db}
       MYSQL_PORT: ${MYSQL_PORT:-3306}
       REDIS_HOST: redis

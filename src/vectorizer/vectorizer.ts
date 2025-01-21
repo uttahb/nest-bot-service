@@ -22,7 +22,7 @@ export class Vectorizer extends WorkerHost {
 
   async process(job: Job<any, any, string>): Promise<any> {
     try {
-      //console.log(`Processing job with DB_TYPE: elasticsearch`);
+      //console.log(`Processing job with VECTOR_DB_TYPE: elasticsearch`);
       await this.processElasticsearch(job);
     } catch (error) {
       console.error('Error processing Elasticsearch job:', error);

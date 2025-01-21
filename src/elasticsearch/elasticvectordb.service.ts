@@ -36,7 +36,7 @@ export class ElasticvectordbService {
         password: this.configService.get('ELASTICSEARCH_PASSWORD'),
       }
     });
-    this.storageDir = this.configService.get<string>('STORAGE_DIR');
+    this.storageDir = path.normalize(this.configService.get<string>('STORAGE_DIR'));
   }
 
   // Vectorize the document by generating embeddings
@@ -102,57 +102,60 @@ export class ElasticvectordbService {
 
     // Check if versionId exists, otherwise return empty response
     if (versionId) {
-      // Join the base storage directory with the documentId and relative path
-      // Inside your extractDocFromthePath method:
-      const documentPath = path.join(this.storageDir, documentId, relativePath);
-      console.log("const documentPath", documentPath);
-      // Normalize the path to ensure consistent separator usage
-      const normalizedPath = path.normalize(documentPath);
+      // Normalize the relative path to use Unix-style separators
+      const normalizedRelativePath = relativePath.replace(/\\/g, '/');
 
-      console.log("Normalized document path:", relativePath);
+      // Resolve the base storage directory and normalize it for the environment
+      const basePath = process.env.STORAGE_DIR || '/app/documents';
+      const normalizedBasePath = path.normalize(basePath).replace(/\\/g, '/');
 
-      // Then use the normalized path in the rest of the code
-      if (fs.existsSync(normalizedPath)) {
+      // Join the base path and normalized relative path
+      const fullPath = path.posix.join(normalizedBasePath, documentId.toString(), normalizedRelativePath);
 
+      console.log("Final document path:", fullPath);
+      console.log(`Attempting to resolve file: StorageDir: ${normalizedBasePath}, DocumentId: ${documentId}, RelativePath: ${relativePath}`);
+
+      // Check if the file exists at the resolved path
+      if (fs.existsSync(fullPath)) {
         try {
           let text = '';
 
-          // Check the file type and process accordingly
-          if (documentPath.endsWith('.pdf')) {
-            text = await this.extractTextFromPdf(documentPath);
-          } else if (documentPath.endsWith('.txt')) {
-            text = fs.readFileSync(documentPath, 'utf-8');
+          // Determine file type and process accordingly
+          if (fullPath.endsWith('.pdf')) {
+            text = await this.extractTextFromPdf(fullPath);
+          } else if (fullPath.endsWith('.txt')) {
+            text = fs.readFileSync(fullPath, 'utf-8');
             console.log("Doc type: txt", documentId);
-          } else if (documentPath.endsWith('.xlsx')) {
+          } else if (fullPath.endsWith('.xlsx')) {
             console.log("Doc type: xlsx", documentId);
-            text = this.extractTextFromExcel(documentPath);
-          } else if (documentPath.endsWith('.docx')) {
+            text = this.extractTextFromExcel(fullPath);
+          } else if (fullPath.endsWith('.docx')) {
             console.log("Doc type: docx", documentId);
-            text = await this.extractTextFromDocx(documentPath);
-          } else if (this.isImage(documentPath)) {
+            text = await this.extractTextFromDocx(fullPath);
+          } else if (this.isImage(fullPath)) {
             console.log("Doc type: image", documentId);
-            text = await this.extractTextFromImage(documentPath);
+            text = await this.extractTextFromImage(fullPath);
           } else {
             return {
               document_id: documentId,
               title: '',
               content: '',
               version_id: versionId,
-              reason: "The uploaded file format is not supported"
+              reason: "The uploaded file format is not supported",
             };
           }
 
-          // If text was extracted, return document details
+          // If text was successfully extracted, return the document details
           if (text) {
             return {
               document_id: documentId,
-              title: `${documentId}_${relativePath}`,  // Use relative path for title
+              title: `${documentId}_${relativePath}`, // Use relative path for title
               content: text,
               version_id: versionId,
             };
           }
         } catch (error) {
-          console.error(`Error processing file ${documentPath} in document ${documentId}`, error);
+          console.error(`Error processing file ${fullPath} in document ${documentId}`, error);
           return {
             document_id: documentId,
             title: '',
@@ -161,7 +164,7 @@ export class ElasticvectordbService {
           };
         }
       } else {
-        throw new Error(`File not found: ${normalizedPath}`);
+        throw new Error(`File not found: ${fullPath}`);
       }
     } else {
       return {
