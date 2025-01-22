@@ -24,6 +24,7 @@ services:
       #- C:/projects/knowledge-hub/documents:/app/documents
     depends_on:
       - redis
+      - elasticsearch
     ports:
       - '3000:3000'
     environment:

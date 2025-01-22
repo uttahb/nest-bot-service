@@ -320,13 +320,26 @@ export class ElasticvectordbService {
       const mappingsFilePath = path.join(__dirname, '..', '..', 'vectordb-mappings.json');
       const mappingsData = JSON.parse(fs.readFileSync(mappingsFilePath, 'utf-8'));
 
+      // Set the default number of shards and replicas based on environment
+      const numberOfShards = process.env.NODE_ENV === 'production' ? 5 : 1;  // 5 for production, 1 for dev
+      const numberOfReplicas = process.env.NODE_ENV === 'production' ? 1 : 0;  // 1 replica for production, 0 for dev
+
+      // Add settings dynamically
+      const indexSettings = {
+        settings: {
+          number_of_shards: numberOfShards,
+          number_of_replicas: numberOfReplicas,
+        },
+        mappings: mappingsData.mappings,
+      };
+
       const indexExists = await this.client.indices.exists({ index: this.indexName });
 
       if (!indexExists) {
         console.log('Index does not exist. Creating index...');
         await this.client.indices.create({
           index: this.indexName,
-          body: mappingsData,
+          body: indexSettings,  // Use the dynamically set index settings
         });
         console.log('Index created successfully.');
       }
