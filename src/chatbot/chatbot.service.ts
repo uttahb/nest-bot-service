@@ -4,13 +4,17 @@ import { SearchResponse } from '@elastic/elasticsearch/lib/api/types';
 import { PrismaService } from '../prisma/prisma.service';
 
 import { Client } from '@elastic/elasticsearch';
-import { chats } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import * as langdetect from 'langdetect';
 
 interface HistoryItem {
   content: string; // The text content of the chat
   timestamp?: Date; // Optional timestamp for when the message was created
+}
+
+export interface chats {
+  user_id: string;
+  title: string;
 }
 
 export interface ChatHistory {
