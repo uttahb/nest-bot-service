@@ -34,7 +34,7 @@ services:
       REDIS_PORT: ${REDIS_PORT:-6379}
     command: [ "sh", "-c", "npx prisma generate && npm run start:production" ]
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
+      test: [ "CMD", "curl", "-f", "http://95.111.251.25:3000/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
