@@ -185,7 +185,7 @@ export class ChatBotService {
     response: string;
     order: number;
   }): Promise<void> {
-    await this.prisma.chat_history.create({
+    await this.prisma.chatHistory.create({
       data: {
         chat_id: chatId,
         query,
@@ -196,7 +196,7 @@ export class ChatBotService {
   }
 
   async getChatHistoryByChatId(chatId: string): Promise<HistoryItem[]> {
-    const chatHistory = await this.prisma.chat_history.findMany({
+    const chatHistory = await this.prisma.chatHistory.findMany({
       where: { chat_id: chatId },
       orderBy: { order: 'asc' }, // Ensure chronological order
     });
@@ -208,7 +208,7 @@ export class ChatBotService {
   }
 
   async createChat(userId: string, title: string): Promise<chats> {
-    return this.prisma.chats.create({
+    return this.prisma.chat.create({
       data: {
         user_id: userId,
         title: title, // Placeholder title
@@ -224,7 +224,7 @@ export class ChatBotService {
    */
   async getChatById(chatId: string, userId: string): Promise<chats | null> {
     try {
-      const chat = await this.prisma.chats.findFirst({
+      const chat = await this.prisma.chat.findFirst({
         where: { uuid: chatId, user_id: userId },
       });
 
@@ -246,7 +246,7 @@ export class ChatBotService {
    */
   async listChats(userId: string): Promise<chats[]> {
     try {
-      return await this.prisma.chats.findMany({
+      return await this.prisma.chat.findMany({
         where: { user_id: userId },
         orderBy: { created_at: 'desc' },
         select: {
@@ -269,7 +269,7 @@ export class ChatBotService {
    */
   async getChatHistory(chatId: string): Promise<ChatHistory[]> {
     try {
-      const history = await this.prisma.chat_history.findMany({
+      const history = await this.prisma.chatHistory.findMany({
         where: { chat_id: chatId },
         orderBy: { order: 'asc' },
         select: {
