@@ -9,10 +9,10 @@ services:
     environment:
       - discovery.type=single-node
       - ELASTIC_PASSWORD=123456
-      - xpack.security.enabled=true
+      - xpack.security.enabled=false # TEMPORARY for debugging, enable in production
     volumes:
-      - esdata:/usr/share/elasticsearch/data # Persistent volume for Elasticsearch data
-      - ./certs:/usr/share/elasticsearch/config/certsd
+      - esdata:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certs
 
   botservice:
     build:
@@ -20,21 +20,19 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./uploads:/app/uploads
-      - ${STORAGE_DIR_HOST}:/app/documents # Ensure this directory exists and has proper permissions
-      #- C:/projects/knowledge-hub/documents:/app/documents
+      - ${STORAGE_DIR_HOST}:/app/documents
     depends_on:
       - redis
       - elasticsearch
     ports:
       - '3000:3000'
     environment:
-      NODE_ENV: ${NODE_ENV:-development} # Use development by default or set in .env for deployment
-      # MYSQL_HOST: ${MYSQL_HOST:-host.docker.internal}
-      DATABASE_URL: ${DATABASE_URL:-mysql://aitest_user:@host.docker.internal:3306/aitest_db}
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: ${DATABASE_URL:-mysql://aitest_user:yourpassword@mysql:3306/aitest_db}
       MYSQL_PORT: ${MYSQL_PORT:-3306}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
-    command: [ "sh", "-c", "npm install && npm run prisma:generate && npm run start:${NODE_ENV}" ]
+    command: [ "sh", "-c", "npx prisma generate && npm run start:${NODE_ENV}" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
       interval: 30s
@@ -68,7 +66,5 @@ services:
       REDIS_DATABASES: 16
 
 volumes:
-  uploads:
-    driver: local
   esdata:
     driver: local
