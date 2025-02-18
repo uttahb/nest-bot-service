@@ -32,7 +32,7 @@ services:
       MYSQL_PORT: ${MYSQL_PORT:-3306}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
-    command: [ "sh", "-c", "npx prisma generate && npm run start:${NODE_ENV}" ]
+    command: [ "sh", "-c", "npx prisma generate && npm run start:production" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
       interval: 30s
