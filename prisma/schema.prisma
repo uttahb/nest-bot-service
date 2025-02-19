@@ -33,6 +33,8 @@ model ChatHistory {
   order      Int       @db.Int
   created_at DateTime  @default(now()) @db.Timestamp(3)
 
+  @@map("chat_history") // Map the Prisma model to the actual table
+
   // Many-to-one relationship with Chat
   chat       Chat      @relation(fields: [chat_id], references: [uuid], onDelete: Cascade)
 
