@@ -9,14 +9,13 @@ services:
       - "9300:9300"
     environment:
       - discovery.type=single-node
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - xpack.security.enabled=true  # ENABLED for security in production
-      - bootstrap.memory_lock=true  # Prevents memory swapping
+      - ELASTIC_PASSWORD=123456
+      - xpack.security.enabled=false # TEMPORARY for debugging, enable in production
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - ./certs:/usr/share/elasticsearch/config/certs
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://elasticsearch:9200/_cluster/health?wait_for_status=yellow&timeout=5s" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -36,18 +35,15 @@ services:
     ports:
       - '3000:3000'
     environment:
-      NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}  # Use .env for database credentials
-      MYSQL_HOST: ${MYSQL_HOST}  # Replace with actual DB host (e.g., RDS)
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: ${DATABASE_URL:-mysql://aitest_user:UpnV2K87%40qw12@95.111.251.25:3306/aitest_db}
       MYSQL_PORT: ${MYSQL_PORT:-3306}
-      MYSQL_USER: ${MYSQL_USER:-root}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       REDIS_HOST: redis
-      REDIS_PORT: 6379
+      REDIS_PORT: ${REDIS_PORT:-6379}
       ELASTICSEARCH_URL: http://elasticsearch:9200
     command: [ "sh", "-c", "npx prisma generate && npx prisma migrate deploy && npm run start:production" ]
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://botservice:3000/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
