@@ -41,7 +41,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
       ELASTICSEARCH_URL: http://elasticsearch:9200
-    command: [ "sh", "-c", "npx prisma generate && npx prisma migrate deploy && npm run start:production" ]
+    command: [ "sh", "-c", "npx prisma generate && npm run start:production" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
       interval: 30s
