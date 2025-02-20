@@ -85,7 +85,6 @@ export class ElasticvectordbService {
     for (const [documentId, relativePath] of Object.entries(docPaths)) {
       console.log("relativePath---", relativePath);
       const normalizedPath = path.normalize(relativePath);
-      console.log("normalizedPath---", normalizedPath);
       const document = await this.extractDocFromthePath(documentId, normalizedPath);
       if (document) documents.push(document);
     }
@@ -95,11 +94,10 @@ export class ElasticvectordbService {
 
   // Extract document based on documentId and its relative path
   async extractDocFromthePath(documentId: string, relativePath: string) {
-    console.log("documentId", documentId);
 
     // Extract versionId from the relative path
     const versionId = extractVersionId(relativePath);
-
+    console.log("versionId---", versionId, "versionId---", relativePath);
     // Check if versionId exists, otherwise return empty response
     if (versionId) {
       // Normalize the relative path to use Unix-style separators
@@ -516,9 +514,9 @@ function splitTextIntoChunks(text: string, chunkSize: number, overlap: number = 
   return chunks;
 }
 
-function extractVersionId(path: string): string | null {
-  // Regular expression to match the version ID after "document-versions\\"
-  const regex = /document-versions\\(\d+)\\/;
+function extractVersionId(path: string): string | null { 
+  // Regular expression to match the version ID after "document-versions/"
+  const regex = /document-versions[\\/](\d+)[\\/]/;
   const match = path.match(regex);
 
   // If a match is found, return the version ID; otherwise, return null
