@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Param, Body, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ElasticvectordbService } from './elasticvectordb.service';
 
-@Controller('elasticsearch')
+@Controller('chatbot')
 export class ElasticvectordbController {
 
   private readonly logger = new Logger(ElasticvectordbController.name);
@@ -70,19 +70,22 @@ export class ElasticvectordbController {
   ) {
 
     const { document_id: docId, version_id: versionId, path, title, content } = doc;
-    if (!title || !content) {
-      const reason = doc.reason !== '' ? doc.reason : 'Document is missing title or content.';
+
+    if (!versionId || versionId === null || versionId === undefined) {
+      const reason: string = 'Version ID not found in path.';
       this.logger.warn(`Skipping document ${docId}: ${reason}`);
-      unindexed.push({ doc_id: docId, version_id: versionId || '', reason });
+      
+      // Ensure `reason` is always defined
+      unindexed.push({ doc_id: docId, version_id: '', reason: reason });
       return;
     }
 
-    if (!versionId) {
-      const reason = 'Version ID not found in path.';
+    if (!title || !content) {
+      const reason = doc.reason !== '' ? doc.reason : 'Document is missing title or content.';
       this.logger.warn(`Skipping document ${docId}: ${reason}`);
-      unindexed.push({ doc_id: docId, version_id: '', reason });
+      unindexed.push({ doc_id: docId, version_id: versionId || '', reason: reason });
       return;
-    }
+    }    
 
     try {
       const isIndexed = await this.elasticvectordbService.isDocumentIndexed(docId, versionId);
@@ -93,22 +96,22 @@ export class ElasticvectordbController {
           await this.deleteAndRecreateDocument({ docId, path });
           const reason = `Document recreated with new version ${versionId} (previous version: ${existingVersionId}).`;
           this.logger.log(reason);
-          indexed.push({ doc_id: docId, version_id: versionId, reason });
+          indexed.push({ doc_id: docId, version_id: versionId, reason: reason });
         } else {
           const reason = 'Document is already indexed with the same version.';
           this.logger.log(`Skipping document ${docId}: ${reason}`);
-          unindexed.push({ doc_id: docId, version_id: versionId, reason });
+          unindexed.push({ doc_id: docId, version_id: versionId, reason: reason });
         }
       } else {
         await this.elasticvectordbService.vectorizeDocument(doc);
         const reason = `Document indexed with docId ${docId} and version ${versionId}.`;
         this.logger.log(reason);
-        indexed.push({ doc_id: docId, version_id: versionId, reason });
+        indexed.push({ doc_id: docId, version_id: versionId, reason: reason });
       }
     } catch (error) {
       const reason = `Failed to process document: ${error.message}`;
       this.logger.error(`Error processing document ${docId}: ${reason}`, error.stack);
-      unindexed.push({ doc_id: docId, version_id: versionId, reason });
+      unindexed.push({ doc_id: docId, version_id: versionId, reason: reason });
     }
   }
 

@@ -36,7 +36,7 @@ services:
       - '3000:3000'
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      DATABASE_URL: ${DATABASE_URL:-mysql://aitest_user:UpnV2K87%40qw12@95.111.251.25:3306/aitest_db}
+      DATABASE_URL: ${DATABASE_URL}
       MYSQL_PORT: ${MYSQL_PORT:-3306}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
