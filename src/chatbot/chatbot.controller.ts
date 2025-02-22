@@ -1,5 +1,6 @@
 import { Body, Controller, HttpException, HttpStatus, Param, Post, Get } from '@nestjs/common';
 import { ChatBotService } from './chatbot.service';
+import openai from 'openai';
 
 interface HistoryItem {
   content: string; // The text content of the chat
@@ -50,7 +51,8 @@ export class ChatBotController {
         chatHistory = await this.chatBotService.getChatHistoryByChatId(chatId);
       } else {
         // Create a new chat if no chatId is provided
-        chatRecord = await this.chatBotService.createChat(userId, query);
+        const title = await this.chatBotService.generateTitle(query);
+        chatRecord = await this.chatBotService.createChat(userId, title);
       }
 
       // Process the query with the chat service

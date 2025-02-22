@@ -69,22 +69,33 @@ export class ChatBotService {
         return { response: 'No relevant documents found for your query.' };
       }
 
-      //console.log('Elasticsearch Results Before Sending to OpenAI:', context);
+      const messages = [
+        "I'm sorry, but this information is not available in the Knowledge Hub.",
+        "Apologies, but I couldn't find this information in the Knowledge Hub.",
+        "Unfortunately, this information is not available in the Knowledge Hub at the moment.",
+        "I'm sorry, but I couldn't locate this information in the Knowledge Hub."
+      ];
+      
+      const getRandomMessage = () => messages[Math.floor(Math.random() * messages.length)];
+      
+      // Generate a random message before making the OpenAI request
+      const randomMessage = getRandomMessage();
+      
       const combinedContext = this.combineContext(history, context);
-
+      
       const prompt = `Relevant context from your documents:\n${combinedContext}\nUser: ${query}\nAI:`;
-
+      
       const openAIResponse = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant. Only respond based on the context provided from the user\'s indexed documents.',
+            content: `You are a helpful assistant. Only respond if the provided context contains relevant information. If there is no relevant information in the context, reply with: "${randomMessage}"`,
           },
           { role: 'user', content: prompt },
         ],
         temperature: 0.7,
-      });
+      });          
 
       //console.log('openAIResponse:', openAIResponse);
       const response = openAIResponse.choices[0]?.message?.content || 'No response generated.';
@@ -93,6 +104,21 @@ export class ChatBotService {
       console.error('Error in chat service:', error);
       throw new Error('Failed to process the chat request.');
     }
+  }
+
+  async generateTitle(query: string): Promise<string> {
+      try {
+          const response = await this.openai.chat.completions.create({
+              model: "gpt-3.5-turbo", // Use GPT-4 or GPT-3.5
+              messages: [{ role: "user", content: `Generate a simple short, catchy title for this query: "${query}"` }],
+              max_tokens: 20, // Short title
+          });
+  
+          return response.choices[0].message?.content.trim() || "Untitled Chat";
+      } catch (error) {
+          console.error("Error generating title:", error);
+          return "Untitled Chat"; // Fallback title
+      }
   }
 
   private async generateQueryVector(query: string): Promise<number[]> {
