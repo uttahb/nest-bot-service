@@ -92,12 +92,12 @@ export class ChatBotService {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful assistant. Your responses should be strictly based on the user's indexed documents. If the provided context contains relevant information, use it to answer the query accurately. If there is no relevant information in the context, simply respond with: "${randomMessage}" and do not attempt to generate an answer from outside knowledge.`,
+            content: `You are a helpful assistant. Answer the user's query based on the provided context from the indexed documents. If the context contains relevant information, use it to generate an accurate response. If the context is missing or does not contain relevant information, respond with: "${randomMessage}".`,
           },
           { role: 'user', content: prompt },
         ],
         temperature: 0.7,
-      });               
+      });                     
 
       //console.log('openAIResponse:', openAIResponse);
       const response = openAIResponse.choices[0]?.message?.content || 'No response generated.';
