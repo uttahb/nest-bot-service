@@ -112,7 +112,7 @@ export class ChatBotService {
       try {
           const response = await this.openai.chat.completions.create({
               model: "gpt-3.5-turbo", // Use GPT-4 or GPT-3.5
-              messages: [{ role: "user", content: `Generate a simple short, catchy title for this query: "${query}"` }],
+              messages: [{ role: "user", content: `Generate a simple short, catchy title for this query: ${query}` }],
               max_tokens: 20, // Short title
           });
   
