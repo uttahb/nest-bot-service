@@ -17,6 +17,7 @@ import { ElasticvectordbService } from './elasticsearch/elasticvectordb.service'
 import { ElasticvectordbController } from './elasticsearch/elasticvectordb.controller';
 import { ChatBotService } from './chatbot/chatbot.service';
 import { ChatBotController } from './chatbot/chatbot.controller';
+import { HealthController } from './health.controller'; 
 
 @Module({
   imports: [
@@ -46,7 +47,8 @@ import { ChatBotController } from './chatbot/chatbot.controller';
     ChatController,
     VectorizerController,
     ElasticvectordbController,
-    ChatBotController
+    ChatBotController,
+    HealthController
   ],
   providers: [
     AppService,
