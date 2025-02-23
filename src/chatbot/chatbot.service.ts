@@ -109,19 +109,19 @@ export class ChatBotService {
   }
 
   async generateTitle(query: string): Promise<string> {
-      try {
-          const response = await this.openai.chat.completions.create({
-              model: "gpt-3.5-turbo", // Use GPT-4 or GPT-3.5
-              messages: [{ role: "user", content: `Generate a simple short, catchy title for this query: ${query}` }],
-              max_tokens: 20, // Short title
-          });
-  
-          return response.choices[0].message?.content.trim() || "Untitled Chat";
-      } catch (error) {
-          console.error("Error generating title:", error);
-          return "Untitled Chat"; // Fallback title
-      }
-  }
+    try {
+        const response = await this.openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: `Generate a simple short, catchy title for this query: ${query}` }],
+            max_tokens: 20,
+        });
+
+        return response.choices[0].message?.content.replace(/^"|"$/g, '').trim() || "Untitled Chat";
+    } catch (error) {
+        console.error("Error generating title:", error);
+        return "Untitled Chat";
+    }
+}
 
   private async generateQueryVector(query: string): Promise<number[]> {
     try {
