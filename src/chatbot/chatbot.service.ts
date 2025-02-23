@@ -78,24 +78,26 @@ export class ChatBotService {
       
       const getRandomMessage = () => messages[Math.floor(Math.random() * messages.length)];
       
-      // Generate a random message before making the OpenAI request
+      // Generate a random fallback message
       const randomMessage = getRandomMessage();
       
+      // Combine indexed documents into context
       const combinedContext = this.combineContext(history, context);
       
-      const prompt = `Relevant context from your documents:\n${combinedContext}\nUser: ${query}\nAI:`;
+      const prompt = `Relevant context from the indexed documents:\n${combinedContext}\n\nUser: ${query}\nAI:`;
       
+      // OpenAI request
       const openAIResponse = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
-            content: `You are a helpful assistant. Only respond if the provided context contains relevant information. If there is no relevant information in the context, reply with: "${randomMessage}"`,
+            content: `You are a helpful assistant. Your responses should be strictly based on the user's indexed documents. If the provided context contains relevant information, use it to answer the query accurately. If there is no relevant information in the context, simply respond with: "${randomMessage}" and do not attempt to generate an answer from outside knowledge.`,
           },
           { role: 'user', content: prompt },
         ],
         temperature: 0.7,
-      });          
+      });               
 
       //console.log('openAIResponse:', openAIResponse);
       const response = openAIResponse.choices[0]?.message?.content || 'No response generated.';
