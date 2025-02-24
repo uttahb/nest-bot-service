@@ -9,8 +9,13 @@ services:
       - "9300:9300"
     environment:
       - discovery.type=single-node
-      - ELASTIC_PASSWORD=123456
-      - xpack.security.enabled=false # TEMPORARY for debugging, enable in production
+      - ELASTIC_USERNAME=${ELASTICSEARCH_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
+      - xpack.security.enabled=false
+      #- xpack.security.transport.ssl.enabled=true
+      #- xpack.security.transport.ssl.certificate=certs/instance/instance.crt
+      #- xpack.security.transport.ssl.key=certs/instance/instance.key
+
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - ./certs:/usr/share/elasticsearch/config/certs
@@ -40,7 +45,7 @@ services:
       MYSQL_PORT: ${MYSQL_PORT:-3306}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
-      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_URL: http://${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}@elasticsearch:9200
     command: [ "sh", "-c", "npx prisma generate && npm run start:production" ]
     healthcheck:
       test: ["CMD", "sh", "-c", "curl -f http://botservice:3000/health"]
