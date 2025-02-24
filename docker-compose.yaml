@@ -11,14 +11,13 @@ services:
       - discovery.type=single-node
       - ELASTIC_USERNAME=${ELASTICSEARCH_USERNAME}
       - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
-      - xpack.security.enabled=false
-      #- xpack.security.transport.ssl.enabled=true
-      #- xpack.security.transport.ssl.certificate=certs/instance/instance.crt
-      #- xpack.security.transport.ssl.key=certs/instance/instance.key
+      - xpack.security.enabled=${ENABLE_SECURITY}  # No default value
+      - xpack.security.transport.ssl.enabled=${ENABLE_SSL}
+      - xpack.security.http.ssl.enabled=${ENABLE_SSL}
 
     volumes:
       - esdata:/usr/share/elasticsearch/data
-      - ./certs:/usr/share/elasticsearch/config/certs
+
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://elasticsearch:9200/_cluster/health?wait_for_status=yellow&timeout=5s" ]
       interval: 10s
