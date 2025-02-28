@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { OpenAI } from 'openai'; // Import OpenAI class
 import { SearchResponse } from '@elastic/elasticsearch/lib/api/types';
 import { PrismaService } from '../prisma/prisma.service';
@@ -332,6 +332,52 @@ export class ChatBotService {
     } catch (error) {
       console.error('Error loading langCode:', error);
       return 'Error detecting language';
+    }
+  }
+
+  async updateChatTitle(chatId: string, title: string) {
+    
+    if (!title || title.trim() === '') {
+      throw new BadRequestException('Title cannot be empty');
+    }
+  
+    try {
+
+      const chat = await this.prisma.chat.update({
+        where: { "uuid": chatId },
+        data: { title },
+      });
+  
+      return { message: 'Chat title updated successfully', chat };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Chat not found');
+      }
+      throw new InternalServerErrorException('Something went wrong');
+    }
+  }
+  async deleteChat(chatId: string) {
+    try {
+      // Check if chat exists before attempting to delete
+      const chatExists = await this.prisma.chat.findUnique({
+        where: { uuid: chatId },
+      });
+  
+      if (!chatExists) {
+        throw new NotFoundException('Chat not found');
+      }
+  
+      // Cascade delete chat and history
+      await this.prisma.chat.delete({
+        where: { uuid: chatId },
+      });
+  
+      return { message: 'Chat and related history deleted successfully' };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Chat not found');
+      }
+      throw new InternalServerErrorException('Something went wrong');
     }
   }
 

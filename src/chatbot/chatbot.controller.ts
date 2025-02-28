@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException, HttpStatus, Param, Post, Get } from '@nestjs/common';
+import { Patch, Delete, Body, Controller, HttpException, HttpStatus, Param, Post, Get } from '@nestjs/common';
 import { ChatBotService } from './chatbot.service';
 import openai from 'openai';
 
@@ -95,5 +95,17 @@ export class ChatBotController {
   async getChatHistory(@Param('chatId') chatId: string) {
     return this.chatBotService.getChatHistory(chatId);
   }
+  
+  // Endpoint to update chat title
+@Patch('update-chat-title/:chatId')
+async updateChatTitle(@Param('chatId') chatId: string, @Body('title') title: string) {
+  return this.chatBotService.updateChatTitle(chatId, title);
+}
+
+// Endpoint to delete a chat and its history
+@Delete('delete-chat/:chatId')
+async deleteChat(@Param('chatId') chatId: string) {
+  return this.chatBotService.deleteChat(chatId);
+}
 
 }
