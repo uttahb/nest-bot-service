@@ -84,20 +84,26 @@ export class ChatBotService {
       // Combine indexed documents into context
       const combinedContext = this.combineContext(history, context);
       
-      const prompt = `Relevant context from the indexed documents:\n${combinedContext}\n\nUser: ${query}\nAI:`;
-      
-      // OpenAI request
-      const openAIResponse = await this.openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a helpful assistant. Answer the user's query based on the provided context from the indexed documents. If the context contains relevant information, use it to generate an accurate response. If the context is missing or does not contain relevant information, respond with: "${randomMessage}".`,
-          },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.7,
-      });                     
+      const prompt = `Here is the relevant information retrieved from indexed documents:\n\n"""${combinedContext}"""\n\n
+User Query: "${query}"\n
+Instructions: If the above information contains relevant details, answer the query accurately based on it. 
+If the retrieved context does not contain relevant information, respond with: "${randomMessage}". 
+If the query is a greeting (e.g., "hello", "hi", "how are you?"), respond politely as an assistant.`;
+
+const openAIResponse = await this.openai.chat.completions.create({
+  model: 'gpt-3.5-turbo',
+  messages: [
+    {
+      role: 'system',
+      content: `You are a helpful assistant strictly limited to answering based on provided indexed documents.
+      - If relevant context is available, use it to answer accurately.
+      - If no relevant context is available, reply with: "${randomMessage}".
+      - If the query is a greeting (e.g., "hello", "hi"), respond politely.`,
+    },
+    { role: 'user', content: prompt },
+  ],
+  temperature: 0.7,
+});                    
 
       //console.log('openAIResponse:', openAIResponse);
       const response = openAIResponse.choices[0]?.message?.content || 'No response generated.';
